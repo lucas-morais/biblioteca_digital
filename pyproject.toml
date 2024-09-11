@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "3.12.*"
 fastapi = {extras = ["standard"], version = "^0.114.1"}
+pydantic = {extras = ["email"], version = "^2.9.1"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -36,7 +37,7 @@ addopts = '-p no:warnings'
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
 format = 'ruff check . --fix; ruff format'
-run = 'fastapi dev biblioteca/app.py'
+run = 'fastapi dev biblioteca_digital/app.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=biblioteca_digital -vv'
 post_test = 'coverage html'
