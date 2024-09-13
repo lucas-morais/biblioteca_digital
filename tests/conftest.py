@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from biblioteca_digital.app import app
 from biblioteca_digital.database import get_session
 from biblioteca_digital.models import User, table_registry
+from biblioteca_digital.schemas import UserPublic
 
 
 @pytest.fixture
@@ -37,11 +38,13 @@ def session():
 
 @pytest.fixture
 def user(session):
-    user = User(
+    db_user = User(
         username='Teste', email='teste@test.com', password='testsecret'
     )
-    session.add(user)
+    session.add(db_user)
     session.commit()
-    session.refresh(user)
+    session.refresh(db_user)
+
+    user = UserPublic.model_validate(db_user).model_dump()
 
     return user
