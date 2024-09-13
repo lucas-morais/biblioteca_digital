@@ -26,6 +26,34 @@ def test_create_user(client):
     }
 
 
+def test_should_return_an_error_if_username_already_exists(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'Teste',
+            'email': 'test@email.com',
+            'password': 'testSecret',
+        },
+    )
+
+    response.status_code = HTTPStatus.BAD_REQUEST
+    response.json = {'detail': 'Username already exists'}
+
+
+def test_should_return_an_error_if_email_already_exists(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'Teste 2',
+            'email': 'teste@teste.com',
+            'password': 'testSecret',
+        },
+    )
+
+    response.status_code = HTTPStatus.BAD_REQUEST
+    response.json = {'detail': 'Email already exists'}
+
+
 def test_read_users(client, user):
     response = client.get('/users/')
 
