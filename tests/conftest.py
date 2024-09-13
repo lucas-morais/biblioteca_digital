@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from biblioteca_digital.app import app
 from biblioteca_digital.database import get_session
-from biblioteca_digital.models import table_registry
+from biblioteca_digital.models import User, table_registry
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def session():
     engine = create_engine(
         'sqlite:///:memory:',
         connect_args={'check_same_thread': False},
-        poolclass=StaticPool
+        poolclass=StaticPool,
     )
     table_registry.metadata.create_all(engine)
 
@@ -33,3 +33,15 @@ def session():
         yield session
 
     table_registry.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def user(session):
+    user = User(
+        username='Teste', email='teste@test.com', password='testsecret'
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return user
