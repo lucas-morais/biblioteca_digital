@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-from biblioteca_digital.schemas import UserPublic
-
 
 def test_root_deve_retornar_ok_e_ola_mundo(client):
     response = client.get('/')
@@ -29,22 +27,17 @@ def test_create_user(client):
 
 
 def test_read_users(client, user):
-    user_schema = UserPublic.model_validate(user).model_dump()
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'users': [user_schema]}
+    assert response.json() == {'users': [user]}
 
 
-def test_read_user(client):
+def test_read_user(client, user):
     response = client.get('/users/1')
 
     response.status_code == HTTPStatus.OK
-    response.json() == {
-        'username': 'ringo',
-        'email': 'ringo@email.com',
-        'id': 1,
-    }
+    response.json() == user
 
 
 def test_get_when_user_does_not_exist(client):
