@@ -33,9 +33,7 @@ def test_read_users(client, user):
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'users': [user_schema]
-    }
+    assert response.json() == {'users': [user_schema]}
 
 
 def test_read_user(client):
@@ -56,7 +54,7 @@ def test_get_when_user_does_not_exist(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user(client):
+def test_update_user(client, user):
     response = client.put(
         '/users/1',
         json={
