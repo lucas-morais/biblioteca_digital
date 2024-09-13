@@ -27,7 +27,9 @@ def read_root():
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserSchema, session: Session = Depends(get_session)):
     db_user = session.scalar(
-        select((User.username == user.username) | (User.email == user.email))
+        select(User).where(
+            (User.username == user.username) | (User.email == user.email)
+        )
     )
 
     if db_user:
@@ -43,7 +45,6 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
                     detail='Email already exists',
                 )
             )
-
     db_user = User(**user.model_dump())
 
     session.add(db_user)
