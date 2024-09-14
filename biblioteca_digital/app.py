@@ -12,6 +12,7 @@ from biblioteca_digital.schemas import (
     UserPublic,
     UserSchema,
 )
+from biblioteca_digital.security import get_password_hash
 
 app = FastAPI()
 
@@ -45,7 +46,10 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
                     detail='Email already exists',
                 )
             )
-    db_user = User(**user.model_dump())
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        **user.model_dump(exclude={'password'}), password=hashed_password
+    )
 
     session.add(db_user)
     session.commit()
