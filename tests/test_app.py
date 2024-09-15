@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from biblioteca_digital.schemas import UserPublic
+
 
 def test_root_deve_retornar_ok_e_ola_mundo(client):
     response = client.get('/')
@@ -55,17 +57,20 @@ def test_should_return_an_error_if_email_already_exists(client, user):
 
 
 def test_read_users(client, user):
+    db_user = UserPublic.model_validate(user).model_dump()
+
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'users': [user]}
+    assert response.json() == {'users': [db_user]}
 
 
 def test_read_user(client, user):
+    db_user = UserPublic.model_validate(user).model_dump()
     response = client.get('/users/1')
 
     response.status_code == HTTPStatus.OK
-    response.json() == user
+    response.json() == db_user
 
 
 def test_get_when_user_does_not_exist(client):
@@ -119,3 +124,15 @@ def test_delete_when_user_does_not_exist(client):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User not found'}
+
+
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    token = response.json()
+    assert response.status_code == HTTPStatus.OK
+    assert 'access_token' in token
+    assert 'token_type' in token

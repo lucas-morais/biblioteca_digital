@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from biblioteca_digital.app import app
 from biblioteca_digital.database import get_session
 from biblioteca_digital.models import User, table_registry
-from biblioteca_digital.schemas import UserPublic
+from biblioteca_digital.security import get_password_hash
 
 
 @pytest.fixture
@@ -38,13 +38,16 @@ def session():
 
 @pytest.fixture
 def user(session):
+    password = 'testsecret'
     db_user = User(
-        username='Teste', email='teste@test.com', password='testsecret'
+        username='Teste',
+        email='teste@test.com',
+        password=get_password_hash(password),
     )
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
 
-    user = UserPublic.model_validate(db_user).model_dump()
+    db_user.clean_password = password
 
-    return user
+    return db_user
