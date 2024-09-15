@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,11 +9,16 @@ from biblioteca_digital.database import get_session
 from biblioteca_digital.models import User
 from biblioteca_digital.schemas import (
     Message,
+    Token,
     UserList,
     UserPublic,
     UserSchema,
 )
-from biblioteca_digital.security import get_password_hash
+from biblioteca_digital.security import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+)
 
 app = FastAPI()
 
@@ -91,7 +97,7 @@ def update_user(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
     db_user.username = user.username
-    db_user.password = user.password
+    db_user.password = get_password_hash(user.password)
     db_user.email = user.email
     session.commit()
     session.refresh(db_user)
@@ -115,3 +121,28 @@ def delete_user(user_id: int, session: Session = Depends(get_session)):
     session.delete(db_user)
     session.commit()
     return {'message': 'User deleted'}
+
+
+@app.post('/token', response_model=Token)
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+):
+    print(form_data)
+    user = session.scalar(select(User).where(User.email == form_data.username))
+
+    if not user:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Incorrect email or password',
+        )
+
+    if not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Incorrect email or password',
+        )
+
+    access_token = create_access_token(data={'sub': user.email})
+
+    return {'access_token': access_token, 'token_type': 'bearer'}
